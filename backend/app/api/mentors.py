@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.user import MentorListItem, MentorProfileDetails, MatchRequestCreate, MatchRequest, MatchRequestOutgoing, ErrorResponse
+from app.schemas.user import MentorListItem, MentorProfileDetails, MatchRequestCreate, MatchRequest, MatchRequestOutgoing
 from app.auth import get_current_user
 from app.models.user import User, MatchRequest as MatchRequestModel
 from app.crud import (
@@ -14,18 +14,10 @@ from sqlalchemy import and_
 
 router = APIRouter()
 
-@router.get("/mentors", 
-           response_model=List[MentorListItem],
-           summary="Get list of mentors (mentee only)",
-           description="Retrieve a list of all mentors, with optional filtering and sorting",
-           responses={
-               200: {"description": "Mentor list retrieved successfully"},
-               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-               500: {"model": ErrorResponse, "description": "Internal server error"}
-           })
+@router.get("/mentors", response_model=List[MentorListItem])
 async def get_mentors_list(
-    skill: Optional[str] = Query(None, description="Filter mentors by skill set (only one skill at a time)"),
-    orderBy: Optional[str] = Query(None, regex="^(skill|name)$", description="Sort mentors by skill or name (ascending order)"),
+    skill: Optional[str] = Query(None),
+    order_by: Optional[str] = Query(None, regex="^(skill|name)$"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -37,7 +29,7 @@ async def get_mentors_list(
                 detail="멘티만 멘토 목록에 접근할 수 있습니다"
             )
         
-        mentors = get_mentors(db, skill=skill, order_by=orderBy)
+        mentors = get_mentors(db, skill=skill, order_by=order_by)
         
         mentor_list = []
         for mentor in mentors:
@@ -65,16 +57,7 @@ async def get_mentors_list(
             detail="Internal server error"
         )
 
-@router.post("/match-requests", 
-            response_model=MatchRequest,
-            summary="Send match request (mentee only)",
-            description="Send a matching request to a mentor",
-            responses={
-                200: {"description": "Match request sent successfully"},
-                400: {"model": ErrorResponse, "description": "Bad request - invalid payload or mentor not found"},
-                401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-                500: {"model": ErrorResponse, "description": "Internal server error"}
-            })
+@router.post("/match-requests", response_model=MatchRequest)
 async def create_match_request_endpoint(
     request_data: MatchRequestCreate,
     current_user: User = Depends(get_current_user),
@@ -155,15 +138,7 @@ async def create_match_request_endpoint(
             detail="Internal server error"
         )
 
-@router.get("/match-requests/incoming", 
-           response_model=List[MatchRequest],
-           summary="Get incoming match requests (mentor only)",
-           description="Retrieve all match requests received by the mentor",
-           responses={
-               200: {"description": "Incoming match requests retrieved successfully"},
-               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-               500: {"model": ErrorResponse, "description": "Internal server error"}
-           })
+@router.get("/match-requests/incoming", response_model=List[MatchRequest])
 async def get_incoming_requests(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -197,15 +172,7 @@ async def get_incoming_requests(
             detail="서버 내부 오류가 발생했습니다"
         )
 
-@router.get("/match-requests/outgoing", 
-           response_model=List[MatchRequestOutgoing],
-           summary="Get outgoing match requests (mentee only)",
-           description="Retrieve all match requests sent by the mentee",
-           responses={
-               200: {"description": "Outgoing match requests retrieved successfully"},
-               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-               500: {"model": ErrorResponse, "description": "Internal server error"}
-           })
+@router.get("/match-requests/outgoing", response_model=List[MatchRequestOutgoing])
 async def get_outgoing_requests(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -238,16 +205,7 @@ async def get_outgoing_requests(
             detail="Internal server error"
         )
 
-@router.put("/match-requests/{request_id}/accept", 
-           response_model=MatchRequest,
-           summary="Accept match request (mentor only)",
-           description="Accept a specific match request",
-           responses={
-               200: {"description": "Match request accepted successfully"},
-               404: {"model": ErrorResponse, "description": "Match request not found"},
-               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-               500: {"model": ErrorResponse, "description": "Internal server error"}
-           })
+@router.put("/match-requests/{request_id}/accept", response_model=MatchRequest)
 async def accept_request(
     request_id: int,
     current_user: User = Depends(get_current_user),
@@ -284,16 +242,7 @@ async def accept_request(
             detail="서버 내부 오류가 발생했습니다"
         )
 
-@router.put("/match-requests/{request_id}/reject", 
-           response_model=MatchRequest,
-           summary="Reject match request (mentor only)",
-           description="Reject a specific match request",
-           responses={
-               200: {"description": "Match request rejected successfully"},
-               404: {"model": ErrorResponse, "description": "Match request not found"},
-               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-               500: {"model": ErrorResponse, "description": "Internal server error"}
-           })
+@router.put("/match-requests/{request_id}/reject", response_model=MatchRequest)
 async def reject_request(
     request_id: int,
     current_user: User = Depends(get_current_user),
@@ -330,16 +279,7 @@ async def reject_request(
             detail="서버 내부 오류가 발생했습니다"
         )
 
-@router.delete("/match-requests/{request_id}", 
-              response_model=MatchRequest,
-              summary="Cancel match request (mentee only)",
-              description="Cancel/delete a specific match request",
-              responses={
-                  200: {"description": "Match request cancelled successfully"},
-                  404: {"model": ErrorResponse, "description": "Match request not found"},
-                  401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-                  500: {"model": ErrorResponse, "description": "Internal server error"}
-              })
+@router.delete("/match-requests/{request_id}", response_model=MatchRequest)
 async def cancel_request(
     request_id: int,
     current_user: User = Depends(get_current_user),
