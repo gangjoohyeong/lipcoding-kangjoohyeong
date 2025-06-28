@@ -13,7 +13,19 @@ app = FastAPI(
     description="API for matching mentors and mentees in a mentoring platform",
     version="1.0.0",
     docs_url="/swagger-ui", 
-    openapi_url="/openapi.json"
+    openapi_url="/openapi.json",
+    contact={
+        "name": "Mentor-Mentee Matching App"
+    },
+    license_info={
+        "name": "MIT"
+    },
+    servers=[
+        {
+            "url": "http://localhost:8080/api",
+            "description": "Local development server"
+        }
+    ]
 )
 
 # CORS 설정

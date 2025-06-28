@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends, Response
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.user import MentorProfile, MenteeProfile, UpdateMentorProfileRequest, UpdateMenteeProfileRequest, MentorProfileDetails, MenteeProfileDetails
+from app.schemas.user import MentorProfile, MenteeProfile, UpdateMentorProfileRequest, UpdateMenteeProfileRequest, MentorProfileDetails, MenteeProfileDetails, ErrorResponse
 from app.auth import get_current_user
 from app.models.user import User
 from app.crud import update_user_profile
@@ -41,7 +41,14 @@ def create_profile_response(user: User):
             profile=profile
         )
 
-@router.get("/me")
+@router.get("/me",
+           summary="Get current user information",
+           description="Retrieve the profile information of the currently authenticated user",
+           responses={
+               200: {"description": "User information retrieved successfully"},
+               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
+               500: {"model": ErrorResponse, "description": "Internal server error"}
+           })
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     try:
         return create_profile_response(current_user)
@@ -51,7 +58,15 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
             detail="Internal server error"
         )
 
-@router.put("/profile")
+@router.put("/profile",
+           summary="Update user profile",
+           description="Update the profile information of the currently authenticated user",
+           responses={
+               200: {"description": "Profile updated successfully"},
+               400: {"model": ErrorResponse, "description": "Bad request - invalid payload format"},
+               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
+               500: {"model": ErrorResponse, "description": "Internal server error"}
+           })
 async def update_profile(
     profile_data: Union[UpdateMentorProfileRequest, UpdateMenteeProfileRequest],
     current_user: User = Depends(get_current_user),
@@ -84,7 +99,14 @@ async def update_profile(
             detail="Internal server error"
         )
 
-@router.get("/images/{role}/{user_id}")
+@router.get("/images/{role}/{user_id}",
+           summary="Get profile image",
+           description="Retrieve the profile image for a specific user",
+           responses={
+               200: {"description": "Profile image retrieved successfully"},
+               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
+               500: {"model": ErrorResponse, "description": "Internal server error"}
+           })
 async def get_profile_image(
     role: str,
     user_id: int,

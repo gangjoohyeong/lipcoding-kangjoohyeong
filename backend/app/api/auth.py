@@ -7,7 +7,15 @@ from app.core.security import verify_password, create_access_token
 
 router = APIRouter()
 
-@router.post("/signup", status_code=201)
+@router.post("/signup", 
+             status_code=201,
+             summary="User registration",
+             description="Register a new user as either a mentor or mentee",
+             responses={
+                 201: {"description": "User successfully created"},
+                 400: {"model": ErrorResponse, "description": "Bad request - invalid payload format"},
+                 500: {"model": ErrorResponse, "description": "Internal server error"}
+             })
 async def signup(user_data: SignupRequest, db: Session = Depends(get_db)):
     try:
         # 이메일 중복 확인
@@ -30,7 +38,16 @@ async def signup(user_data: SignupRequest, db: Session = Depends(get_db)):
             detail="서버 내부 오류가 발생했습니다"
         )
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login", 
+             response_model=LoginResponse,
+             summary="User login", 
+             description="Authenticate user and return JWT token",
+             responses={
+                 200: {"model": LoginResponse, "description": "Login successful"},
+                 400: {"model": ErrorResponse, "description": "Bad request - invalid payload format"},
+                 401: {"model": ErrorResponse, "description": "Unauthorized - login failed"},
+                 500: {"model": ErrorResponse, "description": "Internal server error"}
+             })
 async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     try:
         # 사용자 찾기

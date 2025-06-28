@@ -1,0 +1,918 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Mentor-Mentee Matching API",
+        "description": "API for matching mentors and mentees in a mentoring platform",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api": {
+            "get": {
+                "summary": "Read Root",
+                "operationId": "read_root_api_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/signup": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Signup",
+                "operationId": "signup_api_signup_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SignupRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login",
+                "operationId": "login_api_login_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Get Current User Info",
+                "operationId": "get_current_user_info_api_me_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/profile": {
+            "put": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Update Profile",
+                "operationId": "update_profile_api_profile_put",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/components/schemas/UpdateMentorProfileRequest"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/UpdateMenteeProfileRequest"
+                                    }
+                                ],
+                                "title": "Profile Data"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/images/{role}/{user_id}": {
+            "get": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Get Profile Image",
+                "operationId": "get_profile_image_api_images__role___user_id__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Role"
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "User Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mentors": {
+            "get": {
+                "tags": [
+                    "Mentors",
+                    "Match Requests"
+                ],
+                "summary": "Get Mentors List",
+                "operationId": "get_mentors_list_api_mentors_get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "skill",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Skill"
+                        }
+                    },
+                    {
+                        "name": "orderBy",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "pattern": "^(skill|name)$"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Orderby"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MentorListItem"
+                                    },
+                                    "title": "Response Get Mentors List Api Mentors Get"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/match-requests": {
+            "post": {
+                "tags": [
+                    "Mentors",
+                    "Match Requests"
+                ],
+                "summary": "Create Match Request Endpoint",
+                "operationId": "create_match_request_endpoint_api_match_requests_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MatchRequestCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MatchRequest"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/match-requests/incoming": {
+            "get": {
+                "tags": [
+                    "Mentors",
+                    "Match Requests"
+                ],
+                "summary": "Get Incoming Requests",
+                "operationId": "get_incoming_requests_api_match_requests_incoming_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/MatchRequest"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Get Incoming Requests Api Match Requests Incoming Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/match-requests/outgoing": {
+            "get": {
+                "tags": [
+                    "Mentors",
+                    "Match Requests"
+                ],
+                "summary": "Get Outgoing Requests",
+                "operationId": "get_outgoing_requests_api_match_requests_outgoing_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/MatchRequestOutgoing"
+                                    },
+                                    "type": "array",
+                                    "title": "Response Get Outgoing Requests Api Match Requests Outgoing Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ]
+            }
+        },
+        "/api/match-requests/{request_id}/accept": {
+            "put": {
+                "tags": [
+                    "Mentors",
+                    "Match Requests"
+                ],
+                "summary": "Accept Request",
+                "operationId": "accept_request_api_match_requests__request_id__accept_put",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "request_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Request Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MatchRequest"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/match-requests/{request_id}/reject": {
+            "put": {
+                "tags": [
+                    "Mentors",
+                    "Match Requests"
+                ],
+                "summary": "Reject Request",
+                "operationId": "reject_request_api_match_requests__request_id__reject_put",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "request_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Request Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MatchRequest"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/match-requests/{request_id}": {
+            "delete": {
+                "tags": [
+                    "Mentors",
+                    "Match Requests"
+                ],
+                "summary": "Cancel Request",
+                "operationId": "cancel_request_api_match_requests__request_id__delete",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "request_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "title": "Request Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MatchRequest"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "LoginRequest": {
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "title": "Password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "title": "LoginRequest"
+            },
+            "LoginResponse": {
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "title": "Token"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "token"
+                ],
+                "title": "LoginResponse"
+            },
+            "MatchRequest": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "mentorId": {
+                        "type": "integer",
+                        "title": "Mentorid"
+                    },
+                    "menteeId": {
+                        "type": "integer",
+                        "title": "Menteeid"
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "accepted",
+                            "rejected",
+                            "cancelled"
+                        ],
+                        "title": "Status"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "mentorId",
+                    "menteeId",
+                    "message",
+                    "status"
+                ],
+                "title": "MatchRequest"
+            },
+            "MatchRequestCreate": {
+                "properties": {
+                    "mentorId": {
+                        "type": "integer",
+                        "title": "Mentorid"
+                    },
+                    "menteeId": {
+                        "type": "integer",
+                        "title": "Menteeid"
+                    },
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "mentorId",
+                    "menteeId",
+                    "message"
+                ],
+                "title": "MatchRequestCreate"
+            },
+            "MatchRequestOutgoing": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "mentorId": {
+                        "type": "integer",
+                        "title": "Mentorid"
+                    },
+                    "menteeId": {
+                        "type": "integer",
+                        "title": "Menteeid"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "accepted",
+                            "rejected",
+                            "cancelled"
+                        ],
+                        "title": "Status"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "mentorId",
+                    "menteeId",
+                    "status"
+                ],
+                "title": "MatchRequestOutgoing"
+            },
+            "MentorListItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "role": {
+                        "type": "string",
+                        "const": "mentor",
+                        "title": "Role"
+                    },
+                    "profile": {
+                        "$ref": "#/components/schemas/MentorProfileDetails"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "email",
+                    "role",
+                    "profile"
+                ],
+                "title": "MentorListItem"
+            },
+            "MentorProfileDetails": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "bio": {
+                        "type": "string",
+                        "title": "Bio"
+                    },
+                    "imageUrl": {
+                        "type": "string",
+                        "title": "Imageurl"
+                    },
+                    "skills": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Skills"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name",
+                    "bio",
+                    "imageUrl",
+                    "skills"
+                ],
+                "title": "MentorProfileDetails"
+            },
+            "SignupRequest": {
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "password": {
+                        "type": "string",
+                        "title": "Password"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "mentor",
+                            "mentee"
+                        ],
+                        "title": "Role"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "email",
+                    "password",
+                    "name",
+                    "role"
+                ],
+                "title": "SignupRequest"
+            },
+            "UpdateMenteeProfileRequest": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "role": {
+                        "type": "string",
+                        "const": "mentee",
+                        "title": "Role"
+                    },
+                    "bio": {
+                        "type": "string",
+                        "title": "Bio"
+                    },
+                    "image": {
+                        "type": "string",
+                        "title": "Image"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "role",
+                    "bio",
+                    "image"
+                ],
+                "title": "UpdateMenteeProfileRequest"
+            },
+            "UpdateMentorProfileRequest": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "title": "Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "role": {
+                        "type": "string",
+                        "const": "mentor",
+                        "title": "Role"
+                    },
+                    "bio": {
+                        "type": "string",
+                        "title": "Bio"
+                    },
+                    "image": {
+                        "type": "string",
+                        "title": "Image"
+                    },
+                    "skills": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Skills"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "role",
+                    "bio",
+                    "image",
+                    "skills"
+                ],
+                "title": "UpdateMentorProfileRequest"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        },
+        "securitySchemes": {
+            "HTTPBearer": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    }
+}
