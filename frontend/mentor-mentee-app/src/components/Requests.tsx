@@ -28,21 +28,24 @@ const Requests: React.FC = () => {
         const incoming = await matchRequestAPI.getIncoming();
         setIncomingRequests(incoming);
         
-        // 멘티 정보 가져오기
+        // 멘티 정보 가져오기 - 하드코딩 제거
         const menteeIds = Array.from(new Set(incoming.map((req: MatchRequest) => req.menteeId))) as number[];
         const profiles: {[key: number]: User} = {};
         
         for (const menteeId of menteeIds) {
           try {
-            // 실제로는 사용자 ID로 프로필을 가져오는 API가 필요하지만,
-            // 현재는 현재 사용자 정보만 가져올 수 있으므로 기본값 사용
+            // TODO: 실제 사용자 프로필 API가 구현되면 아래 주석을 해제하고 하드코딩 제거
+            // const profile = await userAPI.getUserProfile(menteeId);
+            // profiles[menteeId] = profile;
+            
+            // 현재는 API가 없으므로 빈 프로필로 설정 (하드코딩 제거됨)
             profiles[menteeId] = {
               id: menteeId,
-              email: `mentee${menteeId}@example.com`,
+              email: '',
               role: 'mentee',
               profile: {
-                name: `멘티 ${menteeId}`,
-                bio: '멘티 프로필',
+                name: '',
+                bio: '',
                 imageUrl: 'https://placehold.co/500x500.jpg?text=MENTEE'
               }
             };
@@ -55,21 +58,26 @@ const Requests: React.FC = () => {
         const outgoing = await matchRequestAPI.getOutgoing();
         setOutgoingRequests(outgoing);
         
-        // 멘토 정보 가져오기
+        // 멘토 정보 가져오기 - 하드코딩 제거
         const mentorIds = Array.from(new Set(outgoing.map((req: any) => req.mentorId))) as number[];
         const profiles: {[key: number]: User} = {};
         
         for (const mentorId of mentorIds) {
           try {
+            // TODO: 실제 사용자 프로필 API가 구현되면 아래 주석을 해제하고 하드코딩 제거
+            // const profile = await userAPI.getUserProfile(mentorId);
+            // profiles[mentorId] = profile;
+            
+            // 현재는 API가 없으므로 빈 프로필로 설정 (하드코딩 제거됨)
             profiles[mentorId] = {
               id: mentorId,
-              email: `mentor${mentorId}@example.com`,
+              email: '',
               role: 'mentor',
               profile: {
-                name: `멘토 ${mentorId}`,
-                bio: '멘토 프로필',
+                name: '',
+                bio: '',
                 imageUrl: 'https://placehold.co/500x500.jpg?text=MENTOR',
-                skills: ['React', 'Node.js']
+                skills: []
               }
             };
           } catch (err) {
@@ -177,8 +185,8 @@ const Requests: React.FC = () => {
                           className="user-avatar"
                         />
                         <div>
-                          <h3>{userProfiles[request.menteeId]?.profile.name || `멘티 ${request.menteeId}`}</h3>
-                          <p>{userProfiles[request.menteeId]?.email || `mentee${request.menteeId}@example.com`}</p>
+                          <h3>{userProfiles[request.menteeId]?.profile.name || `사용자 ${request.menteeId}`}</h3>
+                          <p>{userProfiles[request.menteeId]?.email || '이메일 정보 없음'}</p>
                         </div>
                       </div>
                       <span className={`status-badge ${getStatusBadgeClass(request.status)}`}>
@@ -231,8 +239,8 @@ const Requests: React.FC = () => {
                           className="user-avatar"
                         />
                         <div>
-                          <h3>{userProfiles[request.mentorId]?.profile.name || `멘토 ${request.mentorId}`}</h3>
-                          <p>{userProfiles[request.mentorId]?.email || `mentor${request.mentorId}@example.com`}</p>
+                          <h3>{userProfiles[request.mentorId]?.profile.name || `사용자 ${request.mentorId}`}</h3>
+                          <p>{userProfiles[request.mentorId]?.email || '이메일 정보 없음'}</p>
                         </div>
                       </div>
                       <span id="request-status" className={`status-badge ${getStatusBadgeClass(request.status)}`}>
