@@ -34,8 +34,8 @@ def update_user_profile(db: Session, user: User, profile_data):
     user.name = profile_data.name
     user.bio = profile_data.bio
     
-    # Base64 이미지 디코딩 및 검증
-    if profile_data.image:
+    # Base64 이미지 디코딩 및 검증 (빈 문자열이 아닌 경우만)
+    if profile_data.image and profile_data.image.strip():
         try:
             # Base64 디코딩
             image_data = base64.b64decode(profile_data.image)

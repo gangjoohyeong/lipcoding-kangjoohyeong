@@ -10,6 +10,7 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [previewImage, setPreviewImage] = useState<string>(''); // 미리보기 이미지 상태 추가
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -54,16 +55,53 @@ const Profile: React.FC = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const base64String = reader.result as string;
-      const base64Data = base64String.split(',')[1]; // Remove data:image/...;base64, prefix
-      setFormData(prev => ({
-        ...prev,
-        image: base64Data,
-      }));
+    // 이미지 픽셀 크기 검증을 위한 임시 이미지 생성
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      // 픽셀 크기 검증
+      if (img.width < 500 || img.height < 500 || img.width > 1000 || img.height > 1000) {
+        setError('이미지 크기는 500x500 ~ 1000x1000 픽셀이어야 합니다');
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      
+      // 정사각형 검증
+      if (img.width !== img.height) {
+        setError('이미지는 정사각형이어야 합니다');
+        URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      
+      // 모든 검증 통과시 미리보기 이미지 설정
+      setPreviewImage(objectUrl);
+      
+      // Base64 변환
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        const base64Data = base64String.split(',')[1]; // Remove data:image/...;base64, prefix
+        setFormData(prev => ({
+          ...prev,
+          image: base64Data,
+        }));
+        setError(''); // 오류 메시지 클리어
+      };
+      reader.onerror = () => {
+        setError('이미지 파일을 읽는 중 오류가 발생했습니다');
+        URL.revokeObjectURL(objectUrl);
+        setPreviewImage('');
+      };
+      reader.readAsDataURL(file);
     };
-    reader.readAsDataURL(file);
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      setError('유효하지 않은 이미지 파일입니다');
+    };
+    
+    img.src = objectUrl;
   };
 
   const handleSave = async () => {
@@ -75,6 +113,7 @@ const Profile: React.FC = () => {
       await userAPI.updateProfile(formData);
       setSuccess('프로필이 성공적으로 업데이트되었습니다!');
       setEditing(false);
+      setPreviewImage(''); // 미리보기 이미지 초기화
       // 페이지 새로고침으로 업데이트된 정보 반영
       window.location.reload();
     } catch (err: any) {
@@ -84,11 +123,34 @@ const Profile: React.FC = () => {
     }
   };
 
+  // 편집 취소 시 미리보기 이미지도 초기화
+  const handleCancel = () => {
+    setEditing(false);
+    setPreviewImage('');
+    setFormData({
+      id: user?.id || 0,
+      name: user?.profile.name || '',
+      role: user?.role || 'mentee',
+      bio: user?.profile.bio || '',
+      image: '',
+      skills: (user?.role === 'mentor' && 'skills' in user.profile) ? user.profile.skills : [],
+    });
+  };
+
   if (!user) return null;
 
-  const profileImageUrl = user.profile.imageUrl.startsWith('http') 
-    ? user.profile.imageUrl 
-    : `http://localhost:8080${user.profile.imageUrl}`;
+  // 이미지 표시 로직 개선: 미리보기 이미지가 있으면 우선 표시
+  const getDisplayImageUrl = () => {
+    if (previewImage) {
+      return previewImage;
+    }
+    
+    const originalImageUrl = user.profile.imageUrl;
+    if (originalImageUrl.startsWith('http')) {
+      return originalImageUrl;
+    }
+    return `http://localhost:8080${originalImageUrl}`;
+  };
 
   return (
     <div className="page-container">
@@ -97,7 +159,7 @@ const Profile: React.FC = () => {
           <div className="profile-image-container">
             <img
               id="profile-photo"
-              src={profileImageUrl}
+              src={getDisplayImageUrl()}
               alt="Profile"
               className="profile-image"
               onError={(e) => {
@@ -210,7 +272,7 @@ const Profile: React.FC = () => {
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => setEditing(false)}
+                  onClick={handleCancel}
                   className="cancel-button"
                 >
                   취소
