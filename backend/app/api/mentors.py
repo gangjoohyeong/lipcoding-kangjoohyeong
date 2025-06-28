@@ -37,9 +37,7 @@ async def get_mentors_list(
                 detail="멘티만 멘토 목록에 접근할 수 있습니다"
             )
         
-        # orderBy를 order_by로 변환
-        order_by = orderBy if orderBy else None
-        mentors = get_mentors(db, skill=skill, order_by=order_by)
+        mentors = get_mentors(db, skill=skill, order_by=orderBy)
         
         mentor_list = []
         for mentor in mentors:

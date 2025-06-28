@@ -1,27 +1,24 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Response
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.user import MentorProfile, MenteeProfile, UpdateMentorProfileRequest, UpdateMenteeProfileRequest, MentorProfileDetails, MenteeProfileDetails, ErrorResponse
+from app.schemas.user import User as UserProfile, MentorProfile, MenteeProfile, UpdateMentorProfileRequest, UpdateMenteeProfileRequest, ErrorResponse
 from app.auth import get_current_user
 from app.models.user import User
-from app.crud import update_user_profile
+from app.crud import update_user_profile, get_user_by_id
 from typing import Union
-import io
 
 router = APIRouter()
 
 def create_profile_response(user: User):
-    """사용자 객체를 프로필 응답으로 변환"""
-    image_url = f"/images/{user.role}/{user.id}"
-    
+    """사용자 정보를 프로필 응답 형태로 변환"""
     if user.role == "mentor":
-        profile = MentorProfileDetails(
-            name=user.name,
-            bio=user.bio or "",
-            imageUrl=image_url,
-            skills=user.skills or []
-        )
+        profile = {
+            "name": user.name,
+            "bio": user.bio or "",
+            "imageUrl": f"/images/mentor/{user.id}",
+            "skills": user.skills or []
+        }
         return MentorProfile(
             id=user.id,
             email=user.email,
@@ -29,11 +26,11 @@ def create_profile_response(user: User):
             profile=profile
         )
     else:
-        profile = MenteeProfileDetails(
-            name=user.name,
-            bio=user.bio or "",
-            imageUrl=image_url
-        )
+        profile = {
+            "name": user.name,
+            "bio": user.bio or "",
+            "imageUrl": f"/images/mentee/{user.id}"
+        }
         return MenteeProfile(
             id=user.id,
             email=user.email,
@@ -58,6 +55,64 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
             detail="Internal server error"
         )
 
+@router.get("/images/{role}/{user_id}",
+           summary="Get profile image",
+           description="Retrieve the profile image for a specific user",
+           responses={
+               200: {"description": "Profile image retrieved successfully"},
+               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
+               404: {"model": ErrorResponse, "description": "User or image not found"},
+               500: {"model": ErrorResponse, "description": "Internal server error"}
+           })
+async def get_profile_image(
+    role: str,
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        # 역할 검증
+        if role not in ["mentor", "mentee"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid role. Must be 'mentor' or 'mentee'"
+            )
+        
+        # 사용자 찾기
+        user = get_user_by_id(db, user_id)
+        if not user or user.role != role:
+            raise HTTPException(
+                status_code=404,
+                detail="User not found"
+            )
+        
+        # 프로필 이미지가 있는 경우 반환
+        if user.profile_image:
+            # 이미지 형식 감지
+            if user.profile_image.startswith(b'\xff\xd8'):
+                media_type = "image/jpeg"
+            elif user.profile_image.startswith(b'\x89PNG'):
+                media_type = "image/png"
+            else:
+                media_type = "image/jpeg"  # 기본값
+            
+            return Response(content=user.profile_image, media_type=media_type)
+        else:
+            # 기본 이미지로 리다이렉트
+            from fastapi.responses import RedirectResponse
+            if role == "mentor":
+                return RedirectResponse(url="https://placehold.co/500x500.jpg?text=MENTOR")
+            else:
+                return RedirectResponse(url="https://placehold.co/500x500.jpg?text=MENTEE")
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
+
 @router.put("/profile",
            summary="Update user profile",
            description="Update the profile information of the currently authenticated user",
@@ -73,73 +128,34 @@ async def update_profile(
     db: Session = Depends(get_db)
 ):
     try:
-        # 권한 확인
+        # 프로필 데이터의 사용자 ID가 현재 사용자와 일치하는지 확인
         if profile_data.id != current_user.id:
             raise HTTPException(
                 status_code=403,
-                detail="Not authorized to update this profile"
+                detail="You can only update your own profile"
             )
         
-        # 역할 확인
+        # 역할이 일치하는지 확인
         if profile_data.role != current_user.role:
             raise HTTPException(
                 status_code=400,
-                detail="Role mismatch"
+                detail="Role cannot be changed"
             )
         
         # 프로필 업데이트
         updated_user = update_user_profile(db, current_user, profile_data)
         return create_profile_response(updated_user)
     
-    except HTTPException:
-        raise
-    except Exception as e:
+    except ValueError as e:
+        # 이미지 검증 오류
         raise HTTPException(
-            status_code=500,
-            detail="Internal server error"
+            status_code=400,
+            detail=str(e)
         )
-
-@router.get("/images/{role}/{user_id}",
-           summary="Get profile image",
-           description="Retrieve the profile image for a specific user",
-           responses={
-               200: {"description": "Profile image retrieved successfully"},
-               401: {"model": ErrorResponse, "description": "Unauthorized - authentication failed"},
-               500: {"model": ErrorResponse, "description": "Internal server error"}
-           })
-async def get_profile_image(
-    role: str,
-    user_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    try:
-        # 사용자 찾기
-        from app.crud import get_user_by_id
-        user = get_user_by_id(db, user_id)
-        
-        if not user or user.role != role:
-            raise HTTPException(status_code=404, detail="User not found")
-        
-        # 프로필 이미지가 있으면 반환, 없으면 기본 이미지 URL로 리다이렉트
-        if user.profile_image:
-            return Response(
-                content=user.profile_image,
-                media_type="image/jpeg"
-            )
-        else:
-            # 기본 이미지 URL로 리다이렉트
-            default_text = "MENTOR" if role == "mentor" else "MENTEE"
-            default_url = f"https://placehold.co/500x500.jpg?text={default_text}"
-            return Response(
-                status_code=302,
-                headers={"Location": default_url}
-            )
-    
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error"
+            detail="서버 내부 오류가 발생했습니다"
         )

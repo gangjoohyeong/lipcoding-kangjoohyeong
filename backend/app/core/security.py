@@ -2,11 +2,12 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 import uuid
+import os
 
-# 시크릿 키 (실제 환경에서는 환경변수로 관리)
-SECRET_KEY = "your-secret-key-here"
+# 시크릿 키 (환경변수에서 가져오거나 기본값 사용)
+SECRET_KEY = os.getenv("SECRET_KEY", "your-very-secure-secret-key-change-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 1
+ACCESS_TOKEN_EXPIRE_HOURS = 1  # 요구사항에 따라 1시간으로 변경
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

@@ -17,21 +17,21 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # 관계 설정
-    sent_requests = relationship("MatchRequest", foreign_keys="MatchRequest.mentee_id", back_populates="mentee")
-    received_requests = relationship("MatchRequest", foreign_keys="MatchRequest.mentor_id", back_populates="mentor")
+    # 관계 설정 개선
+    sent_requests = relationship("MatchRequest", foreign_keys="MatchRequest.mentee_id", back_populates="mentee", cascade="all, delete-orphan")
+    received_requests = relationship("MatchRequest", foreign_keys="MatchRequest.mentor_id", back_populates="mentor", cascade="all, delete-orphan")
 
 class MatchRequest(Base):
     __tablename__ = "match_requests"
     
     id = Column(Integer, primary_key=True, index=True)
-    mentor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    mentee_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    mentor_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    mentee_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     message = Column(Text, nullable=False)
     status = Column(String, default="pending")  # "pending", "accepted", "rejected", "cancelled"
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
-    # 관계 설정
+    # 관계 설정 개선
     mentor = relationship("User", foreign_keys=[mentor_id], back_populates="received_requests")
     mentee = relationship("User", foreign_keys=[mentee_id], back_populates="sent_requests")

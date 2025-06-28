@@ -196,7 +196,7 @@ const Requests: React.FC = () => {
                     {request.status === 'pending' && (
                       <div className="request-actions">
                         <button
-                          id={`accept-${request.id}`}
+                          id="accept"
                           onClick={() => handleAccept(request.id)}
                           disabled={actionLoading[request.id]}
                           className="accept-button"
@@ -204,7 +204,7 @@ const Requests: React.FC = () => {
                           {actionLoading[request.id] ? '처리 중...' : '수락'}
                         </button>
                         <button
-                          id={`reject-${request.id}`}
+                          id="reject"
                           onClick={() => handleReject(request.id)}
                           disabled={actionLoading[request.id]}
                           className="reject-button"

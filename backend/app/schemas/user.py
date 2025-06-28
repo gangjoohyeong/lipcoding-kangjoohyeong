@@ -95,7 +95,7 @@ class MatchRequestOutgoing(BaseModel):
     menteeId: int
     status: Literal["pending", "accepted", "rejected", "cancelled"]
 
-# 에러 응답 스키마
+# 에러 응답 스키마 - API 명세와 일치하도록 수정
 class ErrorResponse(BaseModel):
     error: str
     details: Optional[str] = None

@@ -5,6 +5,8 @@ from app.schemas.user import SignupRequest, UpdateMentorProfileRequest, UpdateMe
 from app.core.security import get_password_hash
 import base64
 from typing import Optional, List
+from PIL import Image
+import io
 
 # 사용자 관련 CRUD
 def get_user_by_email(db: Session, email: str):
@@ -32,13 +34,38 @@ def update_user_profile(db: Session, user: User, profile_data):
     user.name = profile_data.name
     user.bio = profile_data.bio
     
-    # Base64 이미지 디코딩 및 저장
+    # Base64 이미지 디코딩 및 검증
     if profile_data.image:
         try:
+            # Base64 디코딩
             image_data = base64.b64decode(profile_data.image)
+            
+            # 파일 크기 검증 (1MB = 1024 * 1024 bytes)
+            if len(image_data) > 1024 * 1024:
+                raise ValueError("이미지 파일 크기는 1MB를 초과할 수 없습니다")
+            
+            # 이미지 형식 및 크기 검증
+            image = Image.open(io.BytesIO(image_data))
+            
+            # 형식 검증 (.jpg, .png만 허용)
+            if image.format not in ['JPEG', 'PNG']:
+                raise ValueError("이미지 형식은 JPG 또는 PNG만 허용됩니다")
+            
+            # 이미지 크기 검증 (500x500 ~ 1000x1000)
+            width, height = image.size
+            if width < 500 or height < 500 or width > 1000 or height > 1000:
+                raise ValueError("이미지 크기는 500x500 ~ 1000x1000 픽셀이어야 합니다")
+            
+            # 정사각형 검증
+            if width != height:
+                raise ValueError("이미지는 정사각형이어야 합니다")
+            
             user.profile_image = image_data
+        except ValueError as e:
+            # 검증 오류는 다시 발생시켜서 API에서 처리하도록
+            raise e
         except Exception:
-            pass  # 이미지 디코딩 실패시 무시
+            raise ValueError("이미지 처리 중 오류가 발생했습니다")
     
     if hasattr(profile_data, 'skills'):
         user.skills = profile_data.skills
@@ -102,6 +129,7 @@ def create_match_request(db: Session, request_data: MatchRequestCreate):
     return new_request
 
 def get_incoming_match_requests(db: Session, mentor_id: int):
+    # 모든 상태의 요청 반환 (API 명세에 따라)
     return db.query(MatchRequest).filter(MatchRequest.mentor_id == mentor_id).all()
 
 def get_outgoing_match_requests(db: Session, mentee_id: int):

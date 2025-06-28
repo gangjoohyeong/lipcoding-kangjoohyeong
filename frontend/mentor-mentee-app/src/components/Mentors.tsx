@@ -142,7 +142,7 @@ const Mentors: React.FC = () => {
                   </div>
                   <div className="mentor-request">
                     <textarea
-                      id={`message-${mentor.id}`}
+                      id="message"
                       data-mentor-id={mentor.id}
                       data-testid={`message-${mentor.id}`}
                       value={requestMessages[mentor.id] || ''}
@@ -154,7 +154,7 @@ const Mentors: React.FC = () => {
                       rows={3}
                     />
                     <button
-                      id={`request-${mentor.id}`}
+                      id="request"
                       onClick={() => handleSendRequest(mentor.id)}
                       disabled={!requestMessages[mentor.id]?.trim() || sendingRequest[mentor.id]}
                       className="request-button"
