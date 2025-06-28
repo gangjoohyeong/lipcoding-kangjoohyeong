@@ -77,16 +77,17 @@ def create_match_request(db: Session, request_data: MatchRequestCreate):
     if existing_pending_request:
         return None  # 이미 pending 요청이 있음
     
-    # 같은 멘토에게 이전에 요청한 적이 있는지 확인 (중복 방지)
-    existing_request = db.query(MatchRequest).filter(
+    # 같은 멘토에게 pending 상태의 요청이 있는지만 확인 (거절/취소된 경우는 재요청 가능)
+    existing_pending_to_mentor = db.query(MatchRequest).filter(
         and_(
             MatchRequest.mentor_id == request_data.mentorId,
-            MatchRequest.mentee_id == request_data.menteeId
+            MatchRequest.mentee_id == request_data.menteeId,
+            MatchRequest.status == "pending"
         )
     ).first()
     
-    if existing_request:
-        return None  # 이미 해당 멘토에게 요청한 적이 있음
+    if existing_pending_to_mentor:
+        return None  # 이미 해당 멘토에게 pending 요청이 있음
     
     # 새 요청 생성
     new_request = MatchRequest(

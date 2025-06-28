@@ -25,21 +25,21 @@ const Navigation: React.FC = () => {
         
         <div className="nav-links">
           <Link to="/profile" className="nav-link">
-            Profile
+            프로필
           </Link>
           
           {user.role === 'mentee' && (
             <Link to="/mentors" className="nav-link">
-              Mentors
+              멘토
             </Link>
           )}
           
           <Link to="/requests" className="nav-link">
-            Requests
+            요청
           </Link>
           
           <button onClick={handleLogout} className="logout-button">
-            Logout
+            로그아웃
           </button>
         </div>
       </div>

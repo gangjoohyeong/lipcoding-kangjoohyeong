@@ -33,7 +33,7 @@ const Signup: React.FC = () => {
       // 회원가입 성공 시 로그인 페이지로 이동
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'An error occurred during signup');
+      setError(err.response?.data?.detail || '회원가입 중 오류가 발생했습니다');
     } finally {
       setLoading(false);
     }
@@ -42,12 +42,12 @@ const Signup: React.FC = () => {
   return (
     <div className="signup-container">
       <div className="signup-card">
-        <h2>Sign Up</h2>
-        <p>Join our mentor-mentee matching platform</p>
+        <h2>회원가입</h2>
+        <p>멘토-멘티 매칭 플랫폼에 가입하세요</p>
         
         <form onSubmit={handleSubmit} className="signup-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">이메일</label>
             <input
               type="email"
               id="email"
@@ -55,12 +55,12 @@ const Signup: React.FC = () => {
               value={formData.email}
               onChange={handleInputChange}
               required
-              placeholder="Enter your email"
+              placeholder="이메일을 입력하세요"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">비밀번호</label>
             <input
               type="password"
               id="password"
@@ -68,13 +68,13 @@ const Signup: React.FC = () => {
               value={formData.password}
               onChange={handleInputChange}
               required
-              placeholder="Enter your password"
+              placeholder="비밀번호를 입력하세요"
               minLength={6}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="name">Name</label>
+            <label htmlFor="name">이름</label>
             <input
               type="text"
               id="name"
@@ -82,12 +82,12 @@ const Signup: React.FC = () => {
               value={formData.name}
               onChange={handleInputChange}
               required
-              placeholder="Enter your name"
+              placeholder="이름을 입력하세요"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="role">Role</label>
+            <label htmlFor="role">역할</label>
             <select
               id="role"
               name="role"
@@ -95,8 +95,8 @@ const Signup: React.FC = () => {
               onChange={handleInputChange}
               required
             >
-              <option value="mentee">Mentee</option>
-              <option value="mentor">Mentor</option>
+              <option value="mentee">멘티</option>
+              <option value="mentor">멘토</option>
             </select>
           </div>
 
@@ -108,18 +108,18 @@ const Signup: React.FC = () => {
             className="signup-button"
             disabled={loading}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? '계정 생성 중...' : '회원가입'}
           </button>
         </form>
 
         <div className="login-link">
-          Already have an account?{' '}
+          이미 계정이 있으신가요?{' '}
           <button
             type="button"
             className="link-button"
             onClick={() => navigate('/login')}
           >
-            Log in
+            로그인
           </button>
         </div>
       </div>

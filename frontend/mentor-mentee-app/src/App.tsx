@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return <div className="loading">로딩 중...</div>;
   }
   
   if (!user) {
@@ -29,7 +29,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return <div className="loading">로딩 중...</div>;
   }
   
   if (user) {

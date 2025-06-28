@@ -26,7 +26,7 @@ async def get_mentors_list(
         if current_user.role != "mentee":
             raise HTTPException(
                 status_code=403,
-                detail="Only mentees can access mentor list"
+                detail="멘티만 멘토 목록에 접근할 수 있습니다"
             )
         
         # orderBy를 order_by로 변환
@@ -70,14 +70,14 @@ async def create_match_request_endpoint(
         if current_user.role != "mentee":
             raise HTTPException(
                 status_code=403,
-                detail="Only mentees can send match requests"
+                detail="멘티만 매칭 요청을 보낼 수 있습니다"
             )
         
         # 요청하는 멘티가 현재 사용자인지 확인
         if request_data.menteeId != current_user.id:
             raise HTTPException(
                 status_code=403,
-                detail="Can only send requests for yourself"
+                detail="본인만 요청을 보낼 수 있습니다"
             )
         
         # 멘토가 존재하는지 확인
@@ -85,7 +85,7 @@ async def create_match_request_endpoint(
         if not mentor or mentor.role != "mentor":
             raise HTTPException(
                 status_code=400,
-                detail="Mentor not found"
+                detail="멘토를 찾을 수 없습니다"
             )
         
         # 매칭 요청 생성
@@ -102,25 +102,26 @@ async def create_match_request_endpoint(
             if existing_pending:
                 raise HTTPException(
                     status_code=400,
-                    detail="You already have a pending request. Please wait for a response or cancel it before sending a new request."
+                    detail="이미 대기 중인 요청이 있습니다. 응답을 받거나 취소한 후 새로운 요청을 보내주세요."
                 )
             
             existing_to_same_mentor = db.query(MatchRequestModel).filter(
                 and_(
                     MatchRequestModel.mentor_id == request_data.mentorId,
-                    MatchRequestModel.mentee_id == request_data.menteeId
+                    MatchRequestModel.mentee_id == request_data.menteeId,
+                    MatchRequestModel.status == "pending"
                 )
             ).first()
             
             if existing_to_same_mentor:
                 raise HTTPException(
                     status_code=400,
-                    detail="You have already sent a request to this mentor."
+                    detail="이미 해당 멘토에게 대기 중인 요청이 있습니다."
                 )
             
             raise HTTPException(
                 status_code=400,
-                detail="Unable to create match request"
+                detail="매칭 요청을 생성할 수 없습니다"
             )
         
         return MatchRequest(
@@ -149,7 +150,7 @@ async def get_incoming_requests(
         if current_user.role != "mentor":
             raise HTTPException(
                 status_code=403,
-                detail="Only mentors can view incoming requests"
+                detail="멘토만 받은 요청을 볼 수 있습니다"
             )
         
         requests = get_incoming_match_requests(db, current_user.id)
@@ -170,7 +171,7 @@ async def get_incoming_requests(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error"
+            detail="서버 내부 오류가 발생했습니다"
         )
 
 @router.get("/match-requests/outgoing", response_model=List[MatchRequestOutgoing])
@@ -183,7 +184,7 @@ async def get_outgoing_requests(
         if current_user.role != "mentee":
             raise HTTPException(
                 status_code=403,
-                detail="Only mentees can view outgoing requests"
+                detail="멘티만 보낸 요청을 볼 수 있습니다"
             )
         
         requests = get_outgoing_match_requests(db, current_user.id)
@@ -217,14 +218,14 @@ async def accept_request(
         if current_user.role != "mentor":
             raise HTTPException(
                 status_code=403,
-                detail="Only mentors can accept requests"
+                detail="멘토만 요청을 수락할 수 있습니다"
             )
         
         match_request = accept_match_request(db, request_id, current_user.id)
         if not match_request:
             raise HTTPException(
                 status_code=404,
-                detail="Match request not found"
+                detail="매칭 요청을 찾을 수 없습니다"
             )
         
         return MatchRequest(
@@ -240,7 +241,7 @@ async def accept_request(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error"
+            detail="서버 내부 오류가 발생했습니다"
         )
 
 @router.put("/match-requests/{request_id}/reject", response_model=MatchRequest)
@@ -254,14 +255,14 @@ async def reject_request(
         if current_user.role != "mentor":
             raise HTTPException(
                 status_code=403,
-                detail="Only mentors can reject requests"
+                detail="멘토만 요청을 거절할 수 있습니다"
             )
         
         match_request = reject_match_request(db, request_id, current_user.id)
         if not match_request:
             raise HTTPException(
                 status_code=404,
-                detail="Match request not found"
+                detail="매칭 요청을 찾을 수 없습니다"
             )
         
         return MatchRequest(
@@ -277,7 +278,7 @@ async def reject_request(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error"
+            detail="서버 내부 오류가 발생했습니다"
         )
 
 @router.delete("/match-requests/{request_id}", response_model=MatchRequest)
@@ -291,14 +292,14 @@ async def cancel_request(
         if current_user.role != "mentee":
             raise HTTPException(
                 status_code=403,
-                detail="Only mentees can cancel requests"
+                detail="멘티만 요청을 취소할 수 있습니다"
             )
         
         match_request = cancel_match_request(db, request_id, current_user.id)
         if not match_request:
             raise HTTPException(
                 status_code=404,
-                detail="Match request not found"
+                detail="매칭 요청을 찾을 수 없습니다"
             )
         
         return MatchRequest(
@@ -314,5 +315,5 @@ async def cancel_request(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error"
+            detail="서버 내부 오류가 발생했습니다"
         )

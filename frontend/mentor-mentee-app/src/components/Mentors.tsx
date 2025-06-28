@@ -24,7 +24,7 @@ const Mentors: React.FC = () => {
       const data = await mentorAPI.getMentors(searchSkill || undefined, sortBy || undefined);
       setMentors(data);
     } catch (err: any) {
-      setError('Failed to fetch mentors');
+      setError('멘토를 불러오는 데 실패했습니다');
     } finally {
       setLoading(false);
     }
@@ -45,9 +45,9 @@ const Mentors: React.FC = () => {
       
       // 요청 성공 후 메시지 초기화
       setRequestMessages(prev => ({ ...prev, [mentorId]: '' }));
-      alert('Request sent successfully!');
+      alert('요청이 성공적으로 전송되었습니다!');
     } catch (err: any) {
-      alert(err.response?.data?.detail || 'Failed to send request');
+      alert(err.response?.data?.detail || '요청 전송에 실패했습니다');
     } finally {
       setSendingRequest(prev => ({ ...prev, [mentorId]: false }));
     }
@@ -57,7 +57,7 @@ const Mentors: React.FC = () => {
   if (user?.role !== 'mentee') {
     return (
       <div className="page-container">
-        <div className="error-message">Only mentees can access the mentor list</div>
+        <div className="error-message">멘티만 멘토 목록에 접근할 수 있습니다</div>
       </div>
     );
   }
@@ -66,24 +66,24 @@ const Mentors: React.FC = () => {
     <div className="page-container">
       <div className="mentors-container">
         <div className="mentors-header">
-          <h1>Find Your Mentor</h1>
-          <p>Browse through our amazing mentors and find the perfect match</p>
+          <h1>멘토 찾기</h1>
+          <p>훌륭한 멘토들을 둘러보고 완벽한 매칭을 찾아보세요</p>
         </div>
 
         <div className="mentors-filters">
           <div className="filter-group">
-            <label htmlFor="search">Search by Skill</label>
+            <label htmlFor="search">기술 스택으로 검색</label>
             <input
               type="text"
               id="search"
               value={searchSkill}
               onChange={(e) => setSearchSkill(e.target.value)}
-              placeholder="e.g., React, Python, Node.js..."
+              placeholder="예: React, Python, Node.js..."
             />
           </div>
 
           <div className="filter-group">
-            <label>Sort by</label>
+            <label>정렬 기준</label>
             <div className="sort-options">
               <label>
                 <input
@@ -94,7 +94,7 @@ const Mentors: React.FC = () => {
                   checked={sortBy === 'name'}
                   onChange={(e) => setSortBy(e.target.value)}
                 />
-                Name
+                이름순
               </label>
               <label>
                 <input
@@ -105,20 +105,20 @@ const Mentors: React.FC = () => {
                   checked={sortBy === 'skill'}
                   onChange={(e) => setSortBy(e.target.value)}
                 />
-                Skills
+                기술순
               </label>
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="loading">Loading mentors...</div>
+          <div className="loading">멘토 목록을 불러오는 중...</div>
         ) : error ? (
           <div className="error-message">{error}</div>
         ) : (
           <div className="mentors-list">
             {mentors.length === 0 ? (
-              <div className="no-mentors">No mentors found</div>
+              <div className="no-mentors">검색된 멘토가 없습니다</div>
             ) : (
               mentors.map((mentor) => (
                 <div key={mentor.id} className="mentor mentor-card">
@@ -142,7 +142,7 @@ const Mentors: React.FC = () => {
                   </div>
                   <div className="mentor-request">
                     <textarea
-                      id="message"
+                      id={`message-${mentor.id}`}
                       data-mentor-id={mentor.id}
                       data-testid={`message-${mentor.id}`}
                       value={requestMessages[mentor.id] || ''}
@@ -150,16 +150,16 @@ const Mentors: React.FC = () => {
                         ...prev,
                         [mentor.id]: e.target.value
                       }))}
-                      placeholder="Write a message to this mentor..."
+                      placeholder="이 멘토에게 보낼 메시지를 작성하세요..."
                       rows={3}
                     />
                     <button
-                      id="request"
+                      id={`request-${mentor.id}`}
                       onClick={() => handleSendRequest(mentor.id)}
                       disabled={!requestMessages[mentor.id]?.trim() || sendingRequest[mentor.id]}
                       className="request-button"
                     >
-                      {sendingRequest[mentor.id] ? 'Sending...' : 'Send Request'}
+                      {sendingRequest[mentor.id] ? '전송 중...' : '요청 보내기'}
                     </button>
                   </div>
                 </div>

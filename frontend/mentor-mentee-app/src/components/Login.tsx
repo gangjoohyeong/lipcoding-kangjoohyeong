@@ -42,12 +42,12 @@ const Login: React.FC = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2>Welcome Back</h2>
-        <p>Sign in to your mentor-mentee account</p>
+        <h2>다시 오신 것을 환영합니다</h2>
+        <p>멘토-멘티 계정으로 로그인하세요</p>
         
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">이메일</label>
             <input
               type="email"
               id="email"
@@ -55,12 +55,12 @@ const Login: React.FC = () => {
               value={formData.email}
               onChange={handleInputChange}
               required
-              placeholder="Enter your email"
+              placeholder="이메일을 입력하세요"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">비밀번호</label>
             <input
               type="password"
               id="password"
@@ -68,7 +68,7 @@ const Login: React.FC = () => {
               value={formData.password}
               onChange={handleInputChange}
               required
-              placeholder="Enter your password"
+              placeholder="비밀번호를 입력하세요"
             />
           </div>
 
@@ -80,18 +80,18 @@ const Login: React.FC = () => {
             className="login-button"
             disabled={loading}
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
 
         <div className="signup-link">
-          Don't have an account?{' '}
+          계정이 없으신가요?{' '}
           <button
             type="button"
             className="link-button"
             onClick={() => navigate('/signup')}
           >
-            Sign up
+            회원가입
           </button>
         </div>
       </div>

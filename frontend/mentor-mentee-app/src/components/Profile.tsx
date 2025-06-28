@@ -44,13 +44,13 @@ const Profile: React.FC = () => {
 
     // 파일 크기 체크 (1MB)
     if (file.size > 1024 * 1024) {
-      setError('Image size must be less than 1MB');
+      setError('이미지 크기는 1MB 이하여야 합니다');
       return;
     }
 
     // 파일 형식 체크
     if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
-      setError('Only JPG and PNG images are allowed');
+      setError('JPG와 PNG 이미지만 허용됩니다');
       return;
     }
 
@@ -73,12 +73,12 @@ const Profile: React.FC = () => {
 
     try {
       await userAPI.updateProfile(formData);
-      setSuccess('Profile updated successfully!');
+      setSuccess('프로필이 성공적으로 업데이트되었습니다!');
       setEditing(false);
       // 페이지 새로고침으로 업데이트된 정보 반영
       window.location.reload();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to update profile');
+      setError(err.response?.data?.detail || '프로필 업데이트에 실패했습니다');
     } finally {
       setLoading(false);
     }
@@ -122,7 +122,7 @@ const Profile: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="upload-button"
                 >
-                  Change Photo
+                  사진 변경
                 </button>
               </div>
             )}
@@ -139,7 +139,7 @@ const Profile: React.FC = () => {
           {editing ? (
             <form className="profile-form">
               <div className="form-group">
-                <label htmlFor="name">Name</label>
+                <label htmlFor="name">이름</label>
                 <input
                   type="text"
                   id="name"
@@ -151,33 +151,33 @@ const Profile: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="bio">Bio</label>
+                <label htmlFor="bio">자기소개</label>
                 <textarea
                   id="bio"
                   name="bio"
                   value={formData.bio}
                   onChange={handleInputChange}
                   rows={4}
-                  placeholder="Tell us about yourself..."
+                  placeholder="자신에 대해 소개해주세요..."
                 />
               </div>
 
               {user.role === 'mentor' && (
                 <div className="form-group">
-                  <label htmlFor="skillsets">Skills (comma separated)</label>
+                  <label htmlFor="skillsets">기술 스택 (쉼표로 구분)</label>
                   <input
                     type="text"
                     id="skillsets"
                     name="skills"
                     value={Array.isArray(formData.skills) ? formData.skills.join(', ') : ''}
                     onChange={handleInputChange}
-                    placeholder="e.g., React, Node.js, Python"
+                    placeholder="예: React, Node.js, Python"
                   />
                 </div>
               )}
 
               <div className="form-group">
-                <label htmlFor="profile">Profile Image</label>
+                <label htmlFor="profile">프로필 이미지</label>
                 <input
                   type="file"
                   id="profile"
@@ -191,10 +191,10 @@ const Profile: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="file-button"
                 >
-                  Choose Image
+                  이미지 선택
                 </button>
                 {formData.image && (
-                  <span className="file-selected">New image selected</span>
+                  <span className="file-selected">새 이미지가 선택되었습니다</span>
                 )}
               </div>
 
@@ -206,34 +206,34 @@ const Profile: React.FC = () => {
                   disabled={loading}
                   className="save-button"
                 >
-                  {loading ? 'Saving...' : 'Save Changes'}
+                  {loading ? '저장 중...' : '변경사항 저장'}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setEditing(false)}
                   className="cancel-button"
                 >
-                  Cancel
+                  취소
                 </button>
               </div>
             </form>
           ) : (
             <div className="profile-view">
               <div className="profile-field">
-                <h3>Bio</h3>
-                <p>{user.profile.bio || 'No bio provided'}</p>
+                <h3>자기소개</h3>
+                <p>{user.profile.bio || '등록된 자기소개가 없습니다'}</p>
               </div>
 
               {user.role === 'mentor' && 'skills' in user.profile && (
                 <div className="profile-field">
-                  <h3>Skills</h3>
+                  <h3>기술 스택</h3>
                   <div className="skills-list">
                     {user.profile.skills.length > 0 ? (
                       user.profile.skills.map((skill, index) => (
                         <span key={index} className="skill-tag">{skill}</span>
                       ))
                     ) : (
-                      <p>No skills listed</p>
+                      <p>등록된 기술 스택이 없습니다</p>
                     )}
                   </div>
                 </div>
@@ -243,7 +243,7 @@ const Profile: React.FC = () => {
                 onClick={() => setEditing(true)}
                 className="edit-button"
               >
-                Edit Profile
+                프로필 수정
               </button>
             </div>
           )}

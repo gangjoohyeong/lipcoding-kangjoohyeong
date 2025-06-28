@@ -15,19 +15,19 @@ async def signup(user_data: SignupRequest, db: Session = Depends(get_db)):
         if existing_user:
             raise HTTPException(
                 status_code=400,
-                detail="Email already registered"
+                detail="이미 등록된 이메일입니다"
             )
         
         # 사용자 생성
         user = create_user(db, user_data)
-        return {"message": "User created successfully"}
+        return {"message": "사용자가 성공적으로 생성되었습니다"}
     
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error"
+            detail="서버 내부 오류가 발생했습니다"
         )
 
 @router.post("/login", response_model=LoginResponse)
@@ -38,7 +38,7 @@ async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
         if not user or not verify_password(login_data.password, user.password_hash):
             raise HTTPException(
                 status_code=401,
-                detail="Invalid email or password"
+                detail="이메일 또는 비밀번호가 올바르지 않습니다"
             )
         
         # JWT 토큰 생성
@@ -56,5 +56,5 @@ async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Internal server error"
+            detail="서버 내부 오류가 발생했습니다"
         )
